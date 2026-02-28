@@ -189,12 +189,19 @@ function EmojiPicker({ value, onChange, library, tabs }) {
   const [tab, setTab] = useState(0);
   const tabSize = Math.ceil(library.length / tabs.length);
   const visible = library.slice(tab * tabSize, (tab + 1) * tabSize);
+  const isEmpty = !value;
   return (
     <div style={{ marginBottom: 18 }}>
       <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Icon</label>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-        <div style={{ fontSize: 30, width: 54, height: 54, background: "#111", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #E8C547", flexShrink: 0 }}>{value}</div>
-        <span style={{ fontSize: 13, color: "#555" }}>Tap any icon to select</span>
+        {/* Current selection preview */}
+        <div style={{ fontSize: 30, width: 54, height: 54, background: "#111", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", border: `2px solid ${isEmpty ? "#444" : "#E8C547"}`, flexShrink: 0, color: "#555" }}>
+          {isEmpty ? <span style={{ fontSize: 18 }}>∅</span> : value}
+        </div>
+        {/* None button */}
+        <button onClick={() => onChange(null)} style={{ background: isEmpty ? "#E8C54722" : "#1e1e1e", border: isEmpty ? "2px solid #E8C547" : "2px solid #333", borderRadius: 10, padding: "8px 14px", color: isEmpty ? "#E8C547" : "#666", cursor: "pointer", fontSize: 13, fontWeight: 700, transition: "all 0.15s" }}>
+          ∅ None
+        </button>
       </div>
       <div style={{ display: "flex", gap: 6, marginBottom: 10, overflowX: "auto", paddingBottom: 4, WebkitOverflowScrolling: "touch" }}>
         {tabs.map((t, i) => (
@@ -215,7 +222,7 @@ function Input({ label, value, onChange, placeholder, type = "text" }) {
     <div style={{ marginBottom: 14 }}>
       {label && <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>{label}</label>}
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
+        autoComplete="new-password" autoCorrect="off" autoCapitalize="off" spellCheck="false" data-lpignore="true" data-form-type="other"
         style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 10, padding: "11px 14px", color: "#f0f0f0", fontSize: 15, outline: "none", boxSizing: "border-box", fontFamily: "inherit" }} />
     </div>
   );
@@ -226,7 +233,7 @@ function Textarea({ label, value, onChange, placeholder }) {
     <div style={{ marginBottom: 14 }}>
       {label && <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>{label}</label>}
       <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={3}
-        autoComplete="off" autoCorrect="off" spellCheck="false"
+        autoComplete="new-password" autoCorrect="off" spellCheck="false" data-lpignore="true" data-form-type="other"
         style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 10, padding: "11px 14px", color: "#f0f0f0", fontSize: 15, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit" }} />
     </div>
   );
@@ -529,9 +536,11 @@ function ItemRow({ item, onToggle, onEdit, onDelete }) {
             <div style={{ width: 46, height: 46, borderRadius: "50%", overflow: "hidden", opacity: item.checked ? 0.45 : 1, border: ac ? `3px solid ${ac}` : "2px solid #444" }}>
               <img src={item.photo} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
-          ) : (
-            <div style={{ fontSize: 24, width: 46, height: 46, background: ac ? ac + "30" : "#252525", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", opacity: item.checked ? 0.35 : 1, transition: "opacity 0.2s", border: ac ? `2px solid ${ac}88` : "1px solid #333" }}>{item.emoji || "📦"}</div>
-          )}
+          ) : item.emoji ? (
+            <div style={{ fontSize: 24, width: 46, height: 46, background: ac ? ac + "30" : "#252525", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", opacity: item.checked ? 0.35 : 1, transition: "opacity 0.2s", border: ac ? `2px solid ${ac}88` : "1px solid #333" }}>{item.emoji}</div>
+          ) : ac ? (
+            <div style={{ width: 46, height: 46, borderRadius: 11, background: ac + "30", border: `2px solid ${ac}88`, flexShrink: 0, opacity: item.checked ? 0.35 : 1 }} />
+          ) : null}
           {/* Emoji badge on photo */}
           {item.photo && item.emoji && (
             <div style={{ position: "absolute", bottom: -2, right: -4, fontSize: 12, background: "#1a1a1a", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #333", opacity: item.checked ? 0.5 : 1 }}>{item.emoji}</div>
@@ -633,13 +642,13 @@ function JobsView({ data, setData, navigate }) {
                           <img src={job.photo} alt={job.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
                       ) : (
-                        <div style={{ fontSize: 26, width: 48, height: 48, background: ac ? ac + "30" : "#252525", borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", border: ac ? `2px solid ${ac}88` : "1px solid #333" }}>{job.icon}</div>
+                        <div style={{ fontSize: 26, width: 48, height: 48, background: ac ? ac + "30" : "#252525", borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", border: ac ? `2px solid ${ac}88` : "1px solid #333" }}>{job.icon || ""}</div>
                       )}
                       {/* emoji moved to name row */}
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 17, fontWeight: 700, color: "#f0f0f0", display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 18 }}>{job.icon}</span>
+                        {job.icon && <span style={{ fontSize: 18 }}>{job.icon}</span>}
                         {job.name}
                         {ac && <div style={{ width: 10, height: 10, borderRadius: "50%", background: ac, flexShrink: 0, boxShadow: `0 0 6px ${ac}99` }} />}
                       </div>
@@ -805,7 +814,7 @@ function BagsView({ data, setData, jobId, navigate }) {
                           <img src={bag.photo} alt={bag.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
                       ) : (
-                        <div style={{ fontSize: 22, width: 44, height: 44, background: ac ? ac + "30" : "#252525", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", border: ac ? `2px solid ${ac}88` : "1px solid #333" }}>{bag.icon}</div>
+                        <div style={{ fontSize: 22, width: 44, height: 44, background: ac ? ac + "30" : "#252525", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", border: ac ? `2px solid ${ac}88` : "1px solid #333" }}>{bag.icon || ""}</div>
                       )}
                       {bag.photo && bag.icon && (
                         <div style={{ position: "absolute", bottom: -2, right: -4, fontSize: 13, background: "#1a1a1a", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #333" }}>{bag.icon}</div>
