@@ -217,13 +217,37 @@ function EmojiPicker({ value, onChange, library, tabs }) {
   );
 }
 
+function QuantityStepper({ label, value, onChange }) {
+  const qty = parseInt(value) || 1;
+  return (
+    <div style={{ marginBottom: 14 }}>
+      {label && <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>{label}</label>}
+      <div style={{ display: "flex", alignItems: "center", gap: 0, background: "#111", border: "1px solid #333", borderRadius: 10, overflow: "hidden", width: "fit-content" }}>
+        <button onClick={() => onChange(Math.max(1, qty - 1))}
+          style={{ width: 48, height: 44, background: "none", border: "none", color: qty <= 1 ? "#444" : "#f0f0f0", fontSize: 22, fontWeight: 300, cursor: qty <= 1 ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "color 0.15s" }}>
+          −
+        </button>
+        <div style={{ minWidth: 44, textAlign: "center", fontSize: 17, fontWeight: 700, color: "#f0f0f0", borderLeft: "1px solid #2a2a2a", borderRight: "1px solid #2a2a2a", height: 44, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 8px" }}>
+          {qty}
+        </div>
+        <button onClick={() => onChange(qty + 1)}
+          style={{ width: 48, height: 44, background: "none", border: "none", color: "#f0f0f0", fontSize: 22, fontWeight: 300, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Input({ label, value, onChange, placeholder, type = "text" }) {
+  const baseStyle = { width: "100%", background: "#111", border: "1px solid #333", borderRadius: 10, padding: "11px 14px", color: "#f0f0f0", fontSize: 15, outline: "none", boxSizing: "border-box", fontFamily: "inherit" };
   return (
     <div style={{ marginBottom: 14 }}>
       {label && <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>{label}</label>}
-      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        autoComplete="new-password" autoCorrect="off" autoCapitalize="off" spellCheck="false" data-lpignore="true" data-form-type="other"
-        style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 10, padding: "11px 14px", color: "#f0f0f0", fontSize: 15, outline: "none", boxSizing: "border-box", fontFamily: "inherit" }} />
+      <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        rows={1} autoCorrect="off" autoCapitalize="off" spellCheck="false"
+        style={{ ...baseStyle, resize: "none", overflow: "hidden", lineHeight: "1.4" }}
+        onInput={e => { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }} />
     </div>
   );
 }
@@ -573,7 +597,7 @@ function ItemForm({ form, setForm, onSave, onCancel, title }) {
       <EmojiPicker value={form.emoji} onChange={v => setForm(f => ({ ...f, emoji: v }))} library={ITEM_EMOJIS} tabs={ITEM_TABS} />
       <ColorPicker value={form.color} onChange={v => setForm(f => ({ ...f, color: v }))} />
       <Input label="Item Name" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} placeholder="e.g. Guitar tuner, Hammer" />
-      <Input label="Quantity" value={form.qty} onChange={v => setForm(f => ({ ...f, qty: parseInt(v) || 1 }))} type="number" placeholder="1" />
+      <QuantityStepper label="Quantity" value={form.qty} onChange={v => setForm(f => ({ ...f, qty: v }))} />
       <Textarea label="Notes (optional)" value={form.notes} onChange={v => setForm(f => ({ ...f, notes: v }))} placeholder="e.g. Check battery, stored in side pocket" />
       <PhotoField photo={form.photo} onChange={v => setForm(f => ({ ...f, photo: v }))} label="Photo (optional)" />
       <div style={{ display: "flex", gap: 10 }}>
@@ -917,6 +941,7 @@ function ItemsView({ data, setData, jobId, bagId, navigate }) {
   const bag = job?.bags.find(b => b.id === bagId);
   const [showAdd, setShowAdd] = useState(false);
   const [editItem, setEditItem] = useState(null);
+  const [showReset, setShowReset] = useState(false);
   const [form, setForm] = useState({ name: "", emoji: "🔧", qty: 1, notes: "", photo: null, color: null });
 
   if (!job || !bag) return null;
@@ -944,6 +969,7 @@ function ItemsView({ data, setData, jobId, bagId, navigate }) {
 
   function deleteItem(itemId) { updateBag(b => ({ ...b, items: b.items.filter(i => i.id !== itemId) })); }
   function toggleCheck(itemId) { updateBag(b => ({ ...b, items: b.items.map(i => i.id === itemId ? { ...i, checked: !i.checked } : i) })); }
+  function resetBag() { updateBag(b => ({ ...b, items: b.items.map(i => ({ ...i, checked: false })) })); setShowReset(false); }
 
   const prog = progressOf(bag.items);
   const ac = bag.color;
@@ -954,6 +980,11 @@ function ItemsView({ data, setData, jobId, bagId, navigate }) {
         photo={bag.photo} icon={bag.icon} name={bag.name}
         subtitle={prog ? (prog.checked === prog.total ? "✓ All packed!" : `${prog.checked} of ${prog.total} packed`) : "No items yet"}
         onBack={() => navigate("bags", jobId)} backLabel={job.name}
+        rightSlot={prog && (
+          <button onClick={() => setShowReset(true)} style={{ background: "#222", border: "1px solid #333", borderRadius: 10, padding: "8px 12px", color: "#aaa", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, flexShrink: 0 }}>
+            <Icon name="reset" size={14} /> Reset
+          </button>
+        )}
       />
       {prog && (
         <div style={{ padding: "8px 20px 12px", background: "#151515", borderBottom: "1px solid #1e1e1e" }}>
@@ -990,6 +1021,16 @@ function ItemsView({ data, setData, jobId, bagId, navigate }) {
           onSave={saveItem} onCancel={() => setShowAdd(false)}
           title={editItem ? "EDIT ITEM" : "ADD EQUIPMENT"}
         />
+      )}
+
+      {showReset && (
+        <Modal title="RESET BAG?" onClose={() => setShowReset(false)}>
+          <p style={{ color: "#aaa", fontSize: 15, marginBottom: 20 }}>This will uncheck all items in <strong style={{ color: "#fff" }}>{bag.name}</strong>.</p>
+          <div style={{ display: "flex", gap: 10 }}>
+            <Btn onClick={resetBag} icon={<Icon name="reset" size={16} />}>Yes, Reset</Btn>
+            <Btn onClick={() => setShowReset(false)} variant="secondary">Cancel</Btn>
+          </div>
+        </Modal>
       )}
     </div>
   );
