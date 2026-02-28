@@ -149,7 +149,7 @@ function ProgressBar({ pct, color = "#E8C547" }) {
 
 function Badge({ children, color = "#E8C547" }) {
   return (
-    <span style={{ background: color + "22", color, fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 20, letterSpacing: "0.05em", border: `1px solid ${color}44` }}>
+    <span style={{ display: "inline-flex", alignItems: "center", alignSelf: "flex-start", background: color + "22", color, fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 20, letterSpacing: "0.05em", border: `1px solid ${color}44`, whiteSpace: "nowrap" }}>
       {children}
     </span>
   );
