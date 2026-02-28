@@ -489,31 +489,34 @@ function PhotoField({ photo, onChange, label = "Photo (optional)" }) {
 
 function PageHeader({ photo, icon, name, subtitle, onBack, backLabel, rightSlot }) {
   return (
-    <div style={{ background: "#151515", borderBottom: "1px solid #1e1e1e", padding: "16px 20px" }}>
+    <div style={{ background: "#151515", borderBottom: "1px solid #1e1e1e", padding: "16px 20px", position: "relative" }}>
+      {/* Action buttons — stacked vertically, pinned to top-right */}
+      {rightSlot && (
+        <div style={{ position: "absolute", top: 16, right: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+          {rightSlot}
+        </div>
+      )}
       <button onClick={onBack} style={{ background: "none", border: "none", color: "#E8C547", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, padding: 0, marginBottom: 12, fontSize: 13, fontWeight: 600 }}>
         <Icon name="back" size={16} /> {backLabel}
       </button>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-          {/* Avatar: photo + emoji badge, or emoji square */}
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            {photo ? (
-              <div style={{ width: 52, height: 52, borderRadius: "50%", overflow: "hidden", border: "2px solid #444" }}>
-                <img src={photo} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              </div>
-            ) : (
-              <div style={{ fontSize: 28, width: 52, height: 52, background: "#222", borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #2a2a2a" }}>{icon}</div>
-            )}
-            {photo && icon && (
-              <div style={{ position: "absolute", bottom: -2, right: -4, fontSize: 14, background: "#151515", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #333" }}>{icon}</div>
-            )}
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</div>
-            <div style={{ fontSize: 12, color: "#555", marginTop: 2 }}>{subtitle}</div>
-          </div>
+      {/* Avatar + name — full width, buttons don't compete */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0, paddingRight: rightSlot ? 52 : 0 }}>
+        <div style={{ position: "relative", flexShrink: 0 }}>
+          {photo ? (
+            <div style={{ width: 52, height: 52, borderRadius: "50%", overflow: "hidden", border: "2px solid #444" }}>
+              <img src={photo} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+          ) : (
+            <div style={{ fontSize: 28, width: 52, height: 52, background: "#222", borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #2a2a2a" }}>{icon}</div>
+          )}
+          {photo && icon && (
+            <div style={{ position: "absolute", bottom: -2, right: -4, fontSize: 14, background: "#151515", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #333" }}>{icon}</div>
+          )}
         </div>
-        {rightSlot}
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</div>
+          <div style={{ fontSize: 12, color: "#555", marginTop: 2 }}>{subtitle}</div>
+        </div>
       </div>
     </div>
   );
@@ -797,16 +800,16 @@ function BagsView({ data, setData, jobId, navigate }) {
         subtitle={`${job.bags.length} bags · ${looseItems.length} items · ${allItems.length} total`}
         onBack={() => navigate("jobs")} backLabel="All Jobs"
         rightSlot={
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => { setJobEditForm({ name: job.name, icon: job.icon, photo: job.photo || null, color: job.color || null }); setShowEditJob(true); }} style={{ background: "#222", border: "1px solid #333", borderRadius: 10, padding: "8px 12px", color: "#aaa", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, flexShrink: 0 }}>
-              <Icon name="edit" size={14} /> Edit
+          <>
+            <button onClick={() => { setJobEditForm({ name: job.name, icon: job.icon, photo: job.photo || null, color: job.color || null }); setShowEditJob(true); }} style={{ width: 40, height: 40, background: "#222", border: "1px solid #333", borderRadius: 10, color: "#aaa", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name="edit" size={18} />
             </button>
             {prog && (
-              <button onClick={() => setShowReset(true)} style={{ background: "#222", border: "1px solid #333", borderRadius: 10, padding: "8px 12px", color: "#aaa", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, flexShrink: 0 }}>
-                <Icon name="reset" size={14} /> Reset
+              <button onClick={() => setShowReset(true)} style={{ width: 40, height: 40, background: "#222", border: "1px solid #333", borderRadius: 10, color: "#aaa", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon name="reset" size={18} />
               </button>
             )}
-          </div>
+          </>
         }
       />
       {prog && (
@@ -981,8 +984,8 @@ function ItemsView({ data, setData, jobId, bagId, navigate }) {
         subtitle={prog ? (prog.checked === prog.total ? "✓ All packed!" : `${prog.checked} of ${prog.total} packed`) : "No items yet"}
         onBack={() => navigate("bags", jobId)} backLabel={job.name}
         rightSlot={prog && (
-          <button onClick={() => setShowReset(true)} style={{ background: "#222", border: "1px solid #333", borderRadius: 10, padding: "8px 12px", color: "#aaa", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, flexShrink: 0 }}>
-            <Icon name="reset" size={14} /> Reset
+          <button onClick={() => setShowReset(true)} style={{ width: 40, height: 40, background: "#222", border: "1px solid #333", borderRadius: 10, color: "#aaa", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon name="reset" size={18} />
           </button>
         )}
       />
